@@ -28,3 +28,17 @@ mlartifacts/
 # Temporary files
 *.log
 .DS_Store
+
+# Local MLflow database
+mlflow.db
+mlflow.db-journal
+
+# Generated datasets and models (will be tracked with DVC)
+data/raw/
+data/processed/
+models/*.joblib
+
+# Keep directory placeholders
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!models/.gitkeep
