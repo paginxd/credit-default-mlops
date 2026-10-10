@@ -1,0 +1,38 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python src/data/prepare.py
+    deps:
+    - path: data/raw/UCI_Credit_Card.csv
+      hash: md5
+      md5: 940b416bb13a9b24bb5c9e1589284005
+      size: 2862995
+    - path: src/data/prepare.py
+      hash: md5
+      md5: 6c934befead975ddaa3f19cca3e697fd
+      size: 1384
+    outs:
+    - path: data/processed/credit_default.csv
+      hash: md5
+      md5: 70d77106f8f3e3b3020de97898644b7c
+      size: 3508312
+  train:
+    cmd: python -m src.models.train
+    deps:
+    - path: data/processed/credit_default.csv
+      hash: md5
+      md5: 70d77106f8f3e3b3020de97898644b7c
+      size: 3508312
+    - path: src/data/validation.py
+      hash: md5
+      md5: 1f316bad0477d1b044ceb15e8659bade
+      size: 2508
+    - path: src/models/train.py
+      hash: md5
+      md5: adf1ff832af0ffede49f0fbb70c3c08b
+      size: 3987
+    outs:
+    - path: models/credit_default_model.joblib
+      hash: md5
+      md5: d1e3995acf1bebc08edd1b875ac7282c
+      size: 4282

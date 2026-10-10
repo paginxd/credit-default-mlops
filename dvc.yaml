@@ -1,0 +1,16 @@
+stages:
+  prepare:
+    cmd: python src/data/prepare.py
+    deps:
+    - data/raw/UCI_Credit_Card.csv
+    - src/data/prepare.py
+    outs:
+    - data/processed/credit_default.csv
+  train:
+    cmd: python -m src.models.train
+    deps:
+    - data/processed/credit_default.csv
+    - src/data/validation.py
+    - src/models/train.py
+    outs:
+    - models/credit_default_model.joblib
