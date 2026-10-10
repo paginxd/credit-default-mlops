@@ -34,8 +34,14 @@ mlflow.db
 mlflow.db-journal
 
 # Generated datasets and models (will be tracked with DVC)
-data/raw/
-data/processed/
+data/raw/*
+!data/raw/*.dvc
+!data/raw/.gitkeep
+
+data/processed/*
+!data/processed/*.dvc
+!data/processed/.gitkeep
+
 models/*.joblib
 
 # Keep directory placeholders
