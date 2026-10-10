@@ -1,36 +1,118 @@
-# Credit Default Prediction — MLOps Project
+# Credit Default Prediction — MLOps-проект
 
-## Project Overview
+## 1. Описание проекта
 
-This project develops a machine learning pipeline for predicting credit card payment defaults. It demonstrates an end-to-end MLOps workflow, including data validation, model training, experiment tracking, automated testing, model serving, and data drift monitoring.
+Проект представляет собой систему машинного обучения для прогнозирования вероятности дефолта по кредитным картам.
 
-## Dataset
+Цель проекта — продемонстрировать полный цикл разработки и развёртывания ML-модели с использованием инструментов MLOps: подготовку и валидацию данных, обучение и сравнение моделей, отслеживание экспериментов, автоматическое тестирование и предоставление предсказаний через REST API.
 
-The project uses the **Default of Credit Card Clients** dataset from the UCI Machine Learning Repository.
+## 2. Датасет
 
-- Original dataset: 30,000 records
-- Features after preprocessing: 23
-- Target: `default.payment.next.month`
-- Target classes:
-  - `0` — no default
-  - `1` — default
-- The `ID` column is removed during preprocessing.
+Используется датасет **Default of Credit Card Clients** из [Kaggle](https://www.kaggle.com/datasets/uciml/default-of-credit-card-clients-dataset?spm=a2ty_o01.29997173.0.0.532fc921UIOjfa).
 
-## Current Implementation
+Основные характеристики:
 
-- Data preprocessing and basic quality checks
-- Data validation with Pandera
-- Scikit-learn preprocessing and modeling pipeline
-- Logistic Regression with hyperparameter tuning using GridSearchCV
-- Experiment tracking and metric logging with MLflow
-- Model serialization using Joblib
-- Automated tests with pytest
+- Количество записей: 30 000.
+- Исходное количество столбцов: 25.
+- Количество признаков после предобработки: 23.
+- Целевая переменная: `default.payment.next.month`.
+- `0` — клиент не допустил дефолт.
+- `1` — клиент допустил дефолт.
+- Столбец `ID` удаляется на этапе предобработки.
 
-## Initial Model Results
+В исходном датасете отсутствуют пропущенные значения. После предобработки формируется файл `data/processed/credit_default.csv`, содержащий 30 000 строк и 24 столбца, включая целевую переменную.
 
-The initial Logistic Regression experiment achieved the following results on a held-out test set:
+## 3. Используемые технологии
 
-| Metric | Value |
+- **Python** — основной язык разработки.
+- **Pandas, NumPy** — обработка данных.
+- **Scikit-learn** — предобработка данных, обучение моделей и оценка качества.
+- **Pandera** — проверка структуры и качества данных.
+- **MLflow** — отслеживание экспериментов, параметров, метрик и моделей.
+- **DVC** — управление этапами ML-пайплайна.
+- **Joblib** — сохранение обученной модели.
+- **FastAPI** — REST API для получения предсказаний.
+- **Docker** — контейнеризация API и модели.
+- **Pytest** — автоматизированное тестирование.
+- **Black, Flake8** — форматирование и статическая проверка кода.
+- **GitHub Actions** — автоматический запуск тестов и проверок при изменениях в репозитории.
+
+## 4. Структура проекта
+
+```text
+credit-default-mlops/
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+├── data/
+│   ├── raw/
+│   │   └── UCI_Credit_Card.csv
+│   └── processed/
+├── models/
+│   └── credit_default_model.joblib
+├── src/
+│   ├── api/
+│   │   └── main.py
+│   ├── data/
+│   │   ├── prepare.py
+│   │   └── validation.py
+│   └── models/
+│       ├── train.py
+│       └── experiments.py
+├── tests/
+│   ├── test_api.py
+│   ├── test_project.py
+│   └── test_validation.py
+├── Dockerfile
+├── dvc.yaml
+├── dvc.lock
+├── requirements.txt
+├── pyproject.toml
+├── run_docker.bat
+└── README.md
+```
+
+## 5. Подготовка данных и обучение модели
+
+Перед началом работы необходимо установить зависимости:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+Подготовить датасет:
+
+```bash
+python src/data/prepare.py
+```
+
+Проверить качество и структуру данных:
+
+```bash
+python -m src.data.validation
+```
+
+Запустить обучение базовой модели:
+
+```bash
+python -m src.models.train
+```
+
+Обучение включает разделение данных на обучающую и тестовую выборки, предобработку признаков и подбор гиперпараметров Logistic Regression с помощью GridSearchCV.
+
+Запустить дополнительные эксперименты и сравнение моделей:
+
+```bash
+python -m src.models.experiments
+```
+
+Результаты экспериментов регистрируются в MLflow. Для повторного запуска обучения с отслеживанием экспериментов должен быть доступен MLflow Tracking Server по адресу `http://127.0.0.1:5000`.
+
+## 6. Результаты экспериментов
+
+Базовая модель Logistic Regression показала следующие результаты на тестовой выборке:
+
+| Метрика | Значение |
 |---|---:|
 | Accuracy | 0.6797 |
 | Precision | 0.3672 |
@@ -39,52 +121,120 @@ The initial Logistic Regression experiment achieved the following results on a h
 | ROC-AUC | 0.7081 |
 | Cross-validation ROC-AUC | 0.7272 |
 
-These results represent a baseline and will be compared with additional experiments.
+В рамках дополнительных экспериментов сравнивались Logistic Regression с различными настройками, Random Forest и Extra Trees.
 
-## Project Structure
+Лучший результат среди перечисленных дополнительных экспериментов по ROC-AUC показала модель Random Forest:
 
-```text
-src/
-  data/
-    prepare.py
-    validation.py
-  models/
-    train.py
-tests/
-data/
-  raw/
-  processed/
-models/
-reports/
-notebooks/
-```
+| Метрика | Значение |
+|---|---:|
+| Accuracy | 0.7812 |
+| Precision | 0.5045 |
+| Recall | 0.5953 |
+| F1-score | 0.5461 |
+| ROC-AUC | 0.7753 |
 
-## Planned Improvements
+Результаты демонстрируют, что сравнение алгоритмов позволяет улучшить качество прогнозирования относительно базовой модели по ряду метрик.
 
-- Compare at least five MLflow experiments
-- Track datasets and model artifacts with DVC
-- Add automated tests and GitHub Actions CI
-- Build a FastAPI prediction service
-- Containerize the service with Docker
-- Implement data drift monitoring using the Population Stability Index (PSI)
-- Complete project documentation and presentation
+## 7. Управление ML-пайплайном с DVC
 
-## Running the Project
+Для воспроизводимости предусмотрен DVC-пайплайн, включающий два этапа:
 
-Prepare the dataset:
+1. `prepare` — подготовка данных.
+2. `train` — обучение модели.
+
+Запустить или актуализировать пайплайн:
 
 ```bash
-python src/data/prepare.py
+dvc repro
 ```
 
-Validate the processed data:
+Конфигурация этапов находится в `dvc.yaml`, а параметры последнего выполнения фиксируются в `dvc.lock`.
+
+## 8. REST API
+
+Для предоставления предсказаний используется FastAPI.
+
+Запустить API локально:
 
 ```bash
-python -m src.data.validation
+python -m uvicorn src.api.main:app --reload
 ```
 
-Train the baseline model:
+После запуска доступны следующие эндпоинты:
+
+| Метод | Эндпоинт | Назначение |
+|---|---|---|
+| GET | `/` | Проверка доступности сервиса |
+| GET | `/health` | Проверка состояния API |
+| POST | `/predict` | Получение предсказания модели |
+
+Интерактивная документация API доступна по адресу:
+
+`http://127.0.0.1:8000/docs`
+
+Эндпоинт `/predict` принимает JSON с признаками клиента и возвращает класс предсказания (`default_prediction`) и вероятность дефолта (`default_probability`).
+
+## 9. Контейнеризация с Docker
+
+В корне проекта находится `Dockerfile`, описывающий сборку образа с необходимыми зависимостями, исходным кодом API и обученной моделью.
+
+Для автоматической сборки образа и запуска API в Windows предусмотрен скрипт `run_docker.bat`.
+
+Запуск:
+
+```cmd
+run_docker.bat
+```
+
+Скрипт собирает образ `credit-default-api` и запускает контейнер с публикацией порта `8000`.
+
+После успешного запуска API доступно по адресу:
+
+`http://127.0.0.1:8000/docs`
+
+Для ручной сборки и запуска можно использовать команды:
 
 ```bash
-python -m src.models.train
+docker build -t credit-default-api .
+docker run --rm -p 8000:8000 credit-default-api
 ```
+
+## 10. Тестирование и CI
+
+Автоматизированные тесты находятся в каталоге `tests/`.
+
+Запуск тестов:
+
+```bash
+python -m pytest -v
+```
+
+Проверка форматирования:
+
+```bash
+python -m black --check src tests
+```
+
+Проверка кода с помощью Flake8:
+
+```bash
+python -m flake8 src tests
+```
+
+GitHub Actions автоматически запускает подготовку данных, тесты и проверки качества кода при отправке изменений в основную ветку `main` или создании Pull Request.
+
+## 11. Итоги
+
+В рамках проекта реализованы основные этапы жизненного цикла ML-модели:
+
+- подготовка и валидация данных;
+- обучение модели и подбор гиперпараметров;
+- сравнение нескольких алгоритмов;
+- отслеживание экспериментов с помощью MLflow;
+- управление этапами пайплайна с помощью DVC;
+- сохранение модели;
+- REST API для получения предсказаний;
+- контейнеризация с Docker;
+- автоматизированное тестирование и CI с GitHub Actions.
+
+Проект демонстрирует базовый воспроизводимый процесс разработки и предоставления ML-модели для прогнозирования кредитного дефолта.
