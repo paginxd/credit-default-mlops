@@ -26,6 +26,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Prepare data
+        run: python src/data/prepare.py
+
       - name: Run tests
         run: python -m pytest -v
 
