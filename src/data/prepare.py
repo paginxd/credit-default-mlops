@@ -1,4 +1,5 @@
 from pathlib import Path
+from urllib.request import urlretrieve
 
 import pandas as pd
 
@@ -6,12 +7,23 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 RAW_DATA_PATH = ROOT_DIR / "data" / "raw" / "UCI_Credit_Card.csv"
 PROCESSED_DATA_PATH = ROOT_DIR / "data" / "processed" / "credit_default.csv"
 
+DATASET_URL = (
+    "https://archive.ics.uci.edu/ml/machine-learning-databases/00350/"
+    "default%20of%20credit%20card%20clients.xls"
+)
+
 TARGET_COLUMN = "default.payment.next.month"
 ID_COLUMN = "ID"
 
 
 def prepare_data() -> None:
-    """Validate the source dataset and save data without the ID column."""
+    """Download, validate, and prepare the source dataset."""
+    if not RAW_DATA_PATH.exists():
+        raise FileNotFoundError(
+            f"Raw CSV not found: {RAW_DATA_PATH}. "
+            "Download the UCI dataset and save it as UCI_Credit_Card.csv."
+        )
+
     df = pd.read_csv(RAW_DATA_PATH)
 
     if TARGET_COLUMN not in df.columns:
